@@ -3,9 +3,9 @@
 
 pragma solidity 0.6.12;
 
-contract CHT {
-    string public name     = "Wrapped CHT";
-    string public symbol   = "CHT";
+contract WCVN {
+    string public name     = "Wrapped CVN";
+    string public symbol   = "CVN";
     uint8  public decimals = 18;
 
     event  Approval(address indexed src, address indexed guy, uint wad);

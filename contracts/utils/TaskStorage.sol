@@ -8,6 +8,7 @@ import "@openzeppelin/contracts/utils/EnumerableSet.sol";
 import "../interface/ITaskStore.sol";
 import "../library/TransferHelper.sol";
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
+import "../cvn/WCVN.sol";
 
 contract TaskStorage is Ownable,ITaskStore{
     
@@ -116,13 +117,22 @@ contract TaskStorage is Ownable,ITaskStore{
         require(task.blocktime > 0 ," task not exist");
         require(task.status == 2," task status error");
         require(task.direction == DIR_WITHDRAW," task direction error");
-
         require(ERC20(token).balanceOf(address(this))>=task.amount,"contract balance not enough");
-        
         TransferHelper.safeTransfer(token,task.to,task.amount);
         task.status = 3;
+    }
 
+    function withdrawNative(bytes32 taskHash,address token) public override 
+    {
+        Task storage task = tasks[taskHash];
+        require(task.blocktime > 0 ," task not exist");
+        require(task.status == 2," task status error");
+        require(task.direction == DIR_WITHDRAW," task direction error");
+        require(ERC20(token).balanceOf(address(this))>=task.amount,"contract balance not enough");
+        WCVN(token).withdraw(task.amount);
+        TransferHelper.safeTransferCVN(task.to, task.amount);
 
+        task.status = 3;
     }
     
 

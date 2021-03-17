@@ -7,6 +7,7 @@ interface ITaskStore {
     function voteTaskStatus(bytes32 taskHash,address operator)  external  returns (uint8,bool);
     function getTaskStatus(bytes32 taskHash) external view returns (uint8);
     function withdrawToken(bytes32 taskHash,address token) external;
+    function withdrawNative(bytes32 taskHash,address token) external;
 
 
 }
