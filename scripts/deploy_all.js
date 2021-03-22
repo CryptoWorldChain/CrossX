@@ -4,7 +4,7 @@ const hre = require("hardhat");
 require("@nomiclabs/hardhat-waffle");
 var Assert = require('assert');
 
-
+const web3 = require('web3');
 
 
 
@@ -23,7 +23,7 @@ async function main() {
   const HecoBridge = await hre.ethers.getContractFactory("HecoBridge");
   
 
-  const bridge = await HecoBridge.deploy(store.address,attachs.cvnt);
+  const bridge = await HecoBridge.deploy(store.address,attachs.cvnt,accounts[0].address,web3.utils.toWei('0.1','ether'));
   await bridge.deployed();
   console.log("HecoBridge deployed to:", bridge.address);
 

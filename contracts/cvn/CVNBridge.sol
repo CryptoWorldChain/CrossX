@@ -31,11 +31,19 @@ contract CVNBridge is  OperatorSet, Pausable {
     
     event WithdrawDone(address indexed from,address indexed to, uint256 value, bytes32 txid);
     
-    WCVN cvnt;
+    WCVN public  cvnt;
     uint8 public voteNum ;
-    constructor(address _store,address _cvnt)public{
+
+    address public feeAddr;
+    uint256 public feePerTx;
+
+
+    constructor(address _store,address _cvnt,address _feeAddr,uint256 _feePerTx)public{
         store=ITaskStore(_store);
         cvnt = WCVN(_cvnt);
+        feeAddr = _feeAddr;
+        feePerTx = _feePerTx;
+
         voteNum = 1;
     }
 
@@ -50,12 +58,23 @@ contract CVNBridge is  OperatorSet, Pausable {
 
     function depositNative(address _to, uint256 _amount, bytes32 _txid) public payable returns (bytes32 taskHash, bool isNewTask){
         require(_to!=address(0x0),"address error");
-        (taskHash,isNewTask) = store.addTask(msg.sender,_to,DIR_DEPOSIT,_amount,_txid,voteNum);
+        require(_amount>feePerTx,"Not Enough Balance for fee");
+        uint256 amount = _amount;
+        bool needFee = (feeAddr!=address(0x0)&&feePerTx>0);
+        if(needFee){
+            amount = amount.sub(feePerTx);
+        }
+
+        (taskHash,isNewTask) = store.addTask(msg.sender,_to,DIR_DEPOSIT,_amount,feePerTx,_txid,voteNum);
         if(isNewTask)
         {
             cvnt.deposit{value: _amount}();
-            assert(cvnt.transfer(address(store), _amount));
-            emit DepositRequest(msg.sender,_to,_amount, _txid);
+            assert(cvnt.transfer(address(store), amount));
+            if(needFee){
+                // TransferHelper.safeTransferFrom(cvnt,msg.sender,feeAddr,feePerTx);
+                assert(cvnt.transfer(feeAddr, feePerTx));
+            }
+            emit DepositRequest(msg.sender,_to,amount, _txid);
         }
     }
 
@@ -93,7 +112,7 @@ contract CVNBridge is  OperatorSet, Pausable {
 
         require(_to!=address(0x0),"address error");
 
-        (taskHash ,isNewTask)= store.addTask(_from,_to,DIR_WITHDRAW,_amount,_txid,voteNum);
+        (taskHash ,isNewTask)= store.addTask(_from,_to,DIR_WITHDRAW,_amount,feePerTx,_txid,voteNum);
 
         if(isNewTask){
             //new task;

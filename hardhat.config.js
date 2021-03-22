@@ -64,8 +64,8 @@ module.exports = {
       accounts,
       attachs:{
            cvnt: "0x5FbDB2315678afecb367f032d93F642f64180aa3",
-           store:"0x158d291D8b47F056751cfF47d1eEcd19FDF9B6f8",
-           bridge:"0x2F54D1563963fC04770E85AF819c89Dc807f6a06",
+           store:"0xBbc18b580256A82dC0F9A86152b8B22E7C1C8005",
+           bridge:"0xB9d9e972100a1dD01cd441774b45b5821e136043",
          }
     },
     mainnet: {
@@ -90,7 +90,11 @@ module.exports = {
       gasPrice: 0x3b9aca00,
       chainId: 3388,
       attachs:{
-           cvnt: "0x3C15538ED063e688c8DF3d571Cb7a0062d2fB18D",
+           cvnt: "0x139e1D41943ee15dDe4DF876f9d0E7F85e26660A",
+           store:"0x67aD6EA566BA6B0fC52e97Bc25CE46120fdAc04c",
+           bridge:"0x114e375B6FCC6d6fCb68c7A1d407E652C54F25FB",
+
+
       }
     }
   }

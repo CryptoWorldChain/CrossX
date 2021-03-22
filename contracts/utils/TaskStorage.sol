@@ -8,19 +8,21 @@ import "@openzeppelin/contracts/utils/EnumerableSet.sol";
 import "../interface/ITaskStore.sol";
 import "../library/TransferHelper.sol";
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
+import "@openzeppelin/contracts/math/SafeMath.sol";
 import "../cvn/WCVN.sol";
 
 contract TaskStorage is Ownable,ITaskStore{
     
     uint8 internal constant DIR_WITHDRAW = 0;
     uint8 internal constant DIR_DEPOSIT = 1;
-
+    using SafeMath for uint256;
 
     struct Task{
         address   from;
         address   to;
         uint8     direction;//[0:cvn-->heco, 1:heco-->cvn];
         uint256   amount;
+        uint256   fee;
         uint8     status;//[0:init, 1:processing, 2:done, 3: withdraw];
         bytes32   txid;
         uint256   blocktime;
@@ -55,7 +57,7 @@ contract TaskStorage is Ownable,ITaskStore{
         voteCount = EnumerableSet.length(task.votes);
     }
  
-    function addTask(address _from,address _to,uint8 _direction,uint256 _amount,bytes32 _txid,uint8 _voteNum) public override returns (bytes32 taskHash,bool isNewTask){
+    function addTask(address _from,address _to,uint8 _direction,uint256 _amount,uint256 _fee,bytes32 _txid,uint8 _voteNum) public override returns (bytes32 taskHash,bool isNewTask){
         
         taskHash = keccak256(abi.encodePacked(_from,_to,_direction,_amount,_txid));
         Task storage task = tasks[taskHash];
@@ -68,6 +70,7 @@ contract TaskStorage is Ownable,ITaskStore{
             task.amount=_amount;
             task.status = 0;
             task.txid = _txid;
+            task.fee = _fee;
             task.blocktime = block.timestamp;
             task.voteNum = _voteNum;
         }else{
@@ -117,8 +120,9 @@ contract TaskStorage is Ownable,ITaskStore{
         require(task.blocktime > 0 ," task not exist");
         require(task.status == 2," task status error");
         require(task.direction == DIR_WITHDRAW," task direction error");
-        require(ERC20(token).balanceOf(address(this))>=task.amount,"contract balance not enough");
-        TransferHelper.safeTransfer(token,task.to,task.amount);
+        uint256 amount = task.amount.sub(task.fee);
+        require(ERC20(token).balanceOf(address(this))>=amount,"contract balance not enough");
+        TransferHelper.safeTransfer(token,task.to,amount);
         task.status = 3;
     }
 
@@ -128,10 +132,13 @@ contract TaskStorage is Ownable,ITaskStore{
         require(task.blocktime > 0 ," task not exist");
         require(task.status == 2," task status error");
         require(task.direction == DIR_WITHDRAW," task direction error");
-        require(ERC20(token).balanceOf(address(this))>=task.amount,"contract balance not enough");
-        WCVN(token).withdraw(task.amount);
-        TransferHelper.safeTransferCVN(task.to, task.amount);
 
+        uint256 amount = task.amount.sub(task.fee);
+
+        require(ERC20(token).balanceOf(address(this))>=amount,"contract balance not enough");
+        
+        WCVN(token).withdraw(amount);
+        TransferHelper.safeTransferCVN(task.to, amount);
         task.status = 3;
     }
     

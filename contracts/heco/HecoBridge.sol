@@ -19,7 +19,7 @@ contract HecoBridge is  OperatorSet, Pausable {
     uint8 internal constant DIR_WITHDRAW = 0;
     uint8 internal constant DIR_DEPOSIT = 1;
     
-    ITaskStore store;
+    ITaskStore public store;
 
     string public constant name = "HecoBridge";
 
@@ -30,30 +30,54 @@ contract HecoBridge is  OperatorSet, Pausable {
     
     event WithdrawDone(address indexed from,address indexed to, uint256 value, bytes32 txid);
     
-    address cvnt;
-    uint8 public voteNum ;
-    constructor(address _store,address _cvnt)public{
+    address public cvnt;
+    address public feeAddr;
+    uint256 public feePerTx;
+    uint8 public voteNum;
+
+    constructor(address _store,address _cvnt,address _feeAddr,uint256 _feePerTx)public{
         store=ITaskStore(_store);
         cvnt = _cvnt;
+        feeAddr = _feeAddr;
+        feePerTx = _feePerTx;
         voteNum = 1;
     }
+
 
     function changeStore(address _store) public onlyOwner {
         store = ITaskStore(_store);
     }
 
-    function changeVoteNum(uint8 _vote) public onlyOperator{
+    function changeVoteNum(uint8 _vote) public onlyOwner{
         voteNum = _vote;
+    }
+
+    function changeFeeAddr(address _feeAddr) public onlyOwner{
+        feeAddr = _feeAddr;
+    }
+
+    function changeFeePerTx(uint256 _feePerTx) public onlyOwner{
+        feePerTx = _feePerTx;
     }
 
 
     function deposit(address _to, uint256 _amount, bytes32 _txid) public payable returns (bytes32 taskHash, bool isNewTask){
         require(_to!=address(0x0),"address error");
-        (taskHash,isNewTask) = store.addTask(msg.sender,_to,DIR_DEPOSIT,_amount,_txid,voteNum);
+        require(ERC20(cvnt).balanceOf(msg.sender)>=_amount,"Not Enough Balance");
+        require(_amount>feePerTx,"Not Enough Balance for fee");
+        uint256 amount = _amount;
+        bool needFee = (feeAddr!=address(0x0)&&feePerTx>0);
+        if(needFee){
+            amount = amount.sub(feePerTx);
+        }
+        (taskHash,isNewTask) = store.addTask(msg.sender,_to,DIR_DEPOSIT,_amount,feePerTx,_txid,voteNum);
         if(isNewTask)
         {
-            TransferHelper.safeTransferFrom(cvnt,msg.sender,address(store),_amount);
-            emit DepositRequest(msg.sender,_to,_amount, _txid);
+            if(needFee){
+                TransferHelper.safeTransferFrom(cvnt,msg.sender,feeAddr,feePerTx);
+            }
+            TransferHelper.safeTransferFrom(cvnt,msg.sender,address(store),amount);
+            emit DepositRequest(msg.sender,_to,amount, _txid);
         }
     }
 
@@ -91,7 +115,7 @@ contract HecoBridge is  OperatorSet, Pausable {
 
         require(_to!=address(0x0),"address error");
 
-        (taskHash ,isNewTask)= store.addTask(_from,_to,DIR_WITHDRAW,_amount,_txid,voteNum);
+        (taskHash ,isNewTask)= store.addTask(_from,_to,DIR_WITHDRAW,_amount,0,_txid,voteNum);
 
         if(isNewTask){
             //new task;

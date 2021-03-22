@@ -29,7 +29,7 @@ async function main() {
   
   await cvnt.approve(bridge.address,web3.utils.toWei('1000','ether'));
 
-  var amount = web3.utils.toWei('1000','wei')
+  var amount = web3.utils.toWei('1','ether')
   var txid=web3.utils.soliditySha3(Date.now());
   var tx  = await bridge.deposit(receiver,amount,txid);
   console.log("submit task txid=",txid);

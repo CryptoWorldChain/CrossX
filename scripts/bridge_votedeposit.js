@@ -26,10 +26,10 @@ async function main() {
   console.log("TaskStorage attach to:", store.address);
 
   var receiver = accounts[1].address;
-  var amount = web3.utils.toWei('1000','wei');
+  var amount = web3.utils.toWei('1','ether');
 
   // var taskHash = "0x6bbe1ecac5982860b91ce2518e63bde0d55690e25d1b9d2142fac28df74da9b3";
-  var txid="0x6896dfd6539e6965400eb087418b7b84807e0ff1132636f449b60e56e14507d0";
+  var txid="0x1501de465d2d46740d8d48c898bb872cef8accd7a45f80cf0239ea8e8ed9d128";
   // console.log("taskinfo=",await store.getTask(taskHash));
   var taskHash = await bridge.getDepositTaskHash(accounts[0].address,receiver,amount,txid);
   console.log("txhash=",taskHash);
