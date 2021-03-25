@@ -9,9 +9,10 @@ import "../interface/ITaskStore.sol";
 import "../library/TransferHelper.sol";
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/math/SafeMath.sol";
+import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import "../cvn/WCVN.sol";
 
-contract TaskStorage is Ownable,ITaskStore{
+contract TaskStorage is Ownable,ITaskStore,ReentrancyGuard{
     
     uint8 internal constant DIR_WITHDRAW = 0;
     uint8 internal constant DIR_DEPOSIT = 1;
@@ -114,10 +115,8 @@ contract TaskStorage is Ownable,ITaskStore{
         status = task.status;
     }
 
-    bool reEntrancyMutex = false;
 
-
-    function withdrawToken(bytes32 taskHash,address token) public override 
+    function withdrawToken(bytes32 taskHash,address token) nonReentrant public override 
     {
         Task storage task = tasks[taskHash];
         require(task.blocktime > 0 ," task not exist");
@@ -126,13 +125,11 @@ contract TaskStorage is Ownable,ITaskStore{
         uint256 amount = task.amount.sub(task.fee);
         require(ERC20(token).balanceOf(address(this))>=amount,"contract balance not enough");
         task.status = 3;
-        reEntrancyMutex = true;
         TransferHelper.safeTransfer(token,task.to,amount);
-        reEntrancyMutex = false; 
-        
+       
     }
 
-    function withdrawNative(bytes32 taskHash,address token) public override 
+    function withdrawNative(bytes32 taskHash,address token) nonReentrant public override 
     {
         Task storage task = tasks[taskHash];
         require(task.blocktime > 0 ," task not exist");
@@ -143,12 +140,9 @@ contract TaskStorage is Ownable,ITaskStore{
 
         require(ERC20(token).balanceOf(address(this))>=amount,"contract balance not enough");
         task.status = 3;
-        
-        reEntrancyMutex = true;
         WCVN(token).withdraw(amount);
         TransferHelper.safeTransferCVN(task.to, amount);
-        reEntrancyMutex = false; 
-        
+    
     }
     
 

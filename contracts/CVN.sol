@@ -36,7 +36,7 @@ contract CVNToken is DelegateERC20, Ownable {
     }
 
     function addMinter(address _addMinter) public onlyOwner returns (bool) {
-        require(_addMinter != address(0), "BXHToken: _addMinter is the zero address");
+        require(_addMinter != address(0), "CVNToken: _addMinter is the zero address");
         if(EnumerableSet.add(_minters, _addMinter))
         {
             emit MinterAdded(_addMinter);
@@ -48,7 +48,7 @@ contract CVNToken is DelegateERC20, Ownable {
     }
 
     function delMinter(address _delMinter) public onlyOwner returns (bool) {
-        require(_delMinter != address(0), "BXHToken: _delMinter is the zero address");
+        require(_delMinter != address(0), "CVNToken: _delMinter is the zero address");
         if(EnumerableSet.remove(_minters, _delMinter)){
             emit MinterRemoved(_delMinter);
             return true;
@@ -66,7 +66,7 @@ contract CVNToken is DelegateERC20, Ownable {
     }
 
     function getMinter(uint256 _index) public view onlyOwner returns (address){
-        require(_index <= getMinterLength() - 1, "BXHToken: index out of bounds");
+        require(_index <= getMinterLength() - 1, "CVNToken: index out of bounds");
         return EnumerableSet.at(_minters, _index);
     }
 
