@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 
-pragma solidity 0.6.12;
+pragma solidity ^0.6.12;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/Pausable.sol";
@@ -114,6 +114,9 @@ contract TaskStorage is Ownable,ITaskStore{
         status = task.status;
     }
 
+    bool reEntrancyMutex = false;
+
+
     function withdrawToken(bytes32 taskHash,address token) public override 
     {
         Task storage task = tasks[taskHash];
@@ -122,8 +125,11 @@ contract TaskStorage is Ownable,ITaskStore{
         require(task.direction == DIR_WITHDRAW," task direction error");
         uint256 amount = task.amount.sub(task.fee);
         require(ERC20(token).balanceOf(address(this))>=amount,"contract balance not enough");
-        TransferHelper.safeTransfer(token,task.to,amount);
         task.status = 3;
+        reEntrancyMutex = true;
+        TransferHelper.safeTransfer(token,task.to,amount);
+        reEntrancyMutex = false; 
+        
     }
 
     function withdrawNative(bytes32 taskHash,address token) public override 
@@ -136,10 +142,13 @@ contract TaskStorage is Ownable,ITaskStore{
         uint256 amount = task.amount.sub(task.fee);
 
         require(ERC20(token).balanceOf(address(this))>=amount,"contract balance not enough");
+        task.status = 3;
         
+        reEntrancyMutex = true;
         WCVN(token).withdraw(amount);
         TransferHelper.safeTransferCVN(task.to, amount);
-        task.status = 3;
+        reEntrancyMutex = false; 
+        
     }
     
 

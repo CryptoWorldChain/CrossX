@@ -11,6 +11,7 @@ var Assert = require('assert');
 async function main() {
 
   const accounts = await ethers.getSigners();
+  console.log("address:",accounts[0].address);
   const CVNToken = await hre.ethers.getContractFactory("CVNToken");
   const cvnt = await CVNToken.deploy();
   await cvnt.deployed();

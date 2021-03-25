@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 
-pragma solidity 0.6.12;
+pragma solidity ^0.6.12;
 
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
@@ -11,12 +11,17 @@ import "./DelegateERC20.sol";
 
 contract CVNToken is DelegateERC20, Ownable {
     uint256 private constant preMineSupply = 5000000 * 1e18; 
-    uint256 private constant maxSupply =    5000000 * 1e18;     // the total supply
+    uint256 private constant maxSupply =    200000000 * 1e18;     // the total supply
 
     using EnumerableSet for EnumerableSet.AddressSet;
     EnumerableSet.AddressSet private _minters;
 
-    constructor() public ERC20("CVNToken", "CVN"){
+    event Mint(address indexed to, uint256 indexed amount);
+
+    event MinterAdded(address indexed addr);
+    event MinterRemoved(address indexed addr);
+
+    constructor() public ERC20("CVNToken", "CVNT"){
         _mint(msg.sender, preMineSupply);
     }
 
@@ -26,17 +31,30 @@ contract CVNToken is DelegateERC20, Ownable {
             return false;
         }
         _mint(_to, _amount);
+        emit Mint(_to,_amount);
         return true;
     }
 
     function addMinter(address _addMinter) public onlyOwner returns (bool) {
         require(_addMinter != address(0), "BXHToken: _addMinter is the zero address");
-        return EnumerableSet.add(_minters, _addMinter);
+        if(EnumerableSet.add(_minters, _addMinter))
+        {
+            emit MinterAdded(_addMinter);
+            return true;
+        }else{
+            return false;
+        }
+        
     }
 
     function delMinter(address _delMinter) public onlyOwner returns (bool) {
         require(_delMinter != address(0), "BXHToken: _delMinter is the zero address");
-        return EnumerableSet.remove(_minters, _delMinter);
+        if(EnumerableSet.remove(_minters, _delMinter)){
+            emit MinterRemoved(_delMinter);
+            return true;
+        }else{
+            return false;
+        }
     }
 
     function getMinterLength() public view returns (uint256) {
