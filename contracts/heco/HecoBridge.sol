@@ -29,6 +29,14 @@ contract HecoBridge is  OperatorSet, Pausable {
     event WithdrawRequest(address indexed from,address indexed to, uint256 value, bytes32 txid);
     
     event WithdrawDone(address indexed from,address indexed to, uint256 value, bytes32 txid);
+
+    event StoreChanged(address indexed newAddr);
+
+    event VoteNumChanged(uint8 indexed newvalue);
+
+    event FeeAddrChanged(address indexed newAddr);
+
+    event FeeChanged(uint256 indexed newvalue);
     
     address public cvnt;
     address public feeAddr;
@@ -46,18 +54,22 @@ contract HecoBridge is  OperatorSet, Pausable {
 
     function changeStore(address _store) public onlyOwner {
         store = ITaskStore(_store);
+        emit StoreChanged(_store);
     }
 
     function changeVoteNum(uint8 _vote) public onlyOwner{
         voteNum = _vote;
+        emit VoteNumChanged(voteNum);
     }
 
     function changeFeeAddr(address _feeAddr) public onlyOwner{
         feeAddr = _feeAddr;
+        emit FeeAddrChanged(feeAddr);
     }
 
     function changeFeePerTx(uint256 _feePerTx) public onlyOwner{
         feePerTx = _feePerTx;
+        emit FeeChanged(feePerTx);
     }
 
 

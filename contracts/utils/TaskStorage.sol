@@ -58,7 +58,7 @@ contract TaskStorage is Ownable,ITaskStore,ReentrancyGuard{
         voteCount = EnumerableSet.length(task.votes);
     }
  
-    function addTask(address _from,address _to,uint8 _direction,uint256 _amount,uint256 _fee,bytes32 _txid,uint8 _voteNum) public onlyCaller override returns (bytes32 taskHash,bool isNewTask){
+    function addTask(address _from,address _to,uint8 _direction,uint256 _amount,uint256 _fee,bytes32 _txid,uint8 _voteNum) public  override returns (bytes32 taskHash,bool isNewTask){
         
         taskHash = keccak256(abi.encodePacked(_from,_to,_direction,_amount,_txid));
         Task storage task = tasks[taskHash];
