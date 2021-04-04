@@ -43,7 +43,7 @@ async function main() {
   // console.log("CVNT deployed to:", cvnt.address);
   // hre.ethers.provider = newprovider; 
   // hre.network.provider = newprovider;
-  // cvnt.signer = newsigner;
+  // cvnt.signer = newsigner;git
   await cvnt.addMinter(accounts[0].address);
   await cvnt.addMinter(accounts[1].address);
 
