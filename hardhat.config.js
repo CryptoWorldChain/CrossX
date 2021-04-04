@@ -1,12 +1,16 @@
 require("@nomiclabs/hardhat-waffle");
+require("@nomiclabs/hardhat-ethers");
+require("@nomiclabs/hardhat-web3");
+
 require("@nomiclabs/hardhat-etherscan");
+require("brewchain_provider");
 
 // This is a sample Hardhat task. To learn how to create your own go to
 // https://hardhat.org/guides/create-task.html
 
 const accounts = {
   mnemonic: process.env.MNEMONIC || "test test test test test test test test test test test junk",
-  initialIndex: 8
+  // initialIndex: 8
   // accountsBalance: "990000000000000000000",
 }
 
@@ -57,7 +61,7 @@ module.exports = {
     // Obtain one at https://etherscan.io/
     apiKey:"6IQTZTMD392X2U2SYZBABWDS8KB6D8UD4T"
   },
-  defaultNetwork: "local",
+  defaultNetwork: "brewchain",
   networks: {
     local: {
       url: `http://localhost:8545`,
@@ -84,11 +88,22 @@ module.exports = {
         cvnt: "0x3C15538ED063e688c8DF3d571Cb7a0062d2fB18D",
       },
     },
+    brewchain:{
+      url:"http://localhost:8000",
+      accounts,
+      gasPrice: 20*1000000000,
+      chainId: 128,
+      loggingEnabled: true,
+      blockGasLimit:0x280de80,
+      attachs:{
+        cvnt: "0x3C15538ED063e688c8DF3d571Cb7a0062d2fB18D",
+      },
+    },
     hecolocal:{
       url: `http://94.74.87.188:8545`,
       accounts,
       gasPrice: 0x3b9aca00,
-      chainId: 3388,
+      chainId: 0xd3c,
       attachs:{
            cvnt: "0x139e1D41943ee15dDe4DF876f9d0E7F85e26660A",
            store:"0x67aD6EA566BA6B0fC52e97Bc25CE46120fdAc04c",
