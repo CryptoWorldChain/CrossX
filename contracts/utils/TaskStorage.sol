@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 
-pragma solidity 0.6.12;
+pragma solidity ^0.6.12;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/Pausable.sol";
@@ -9,9 +9,10 @@ import "../interface/ITaskStore.sol";
 import "../library/TransferHelper.sol";
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/math/SafeMath.sol";
+import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import "../cvn/WCVN.sol";
 
-contract TaskStorage is Ownable,ITaskStore{
+contract TaskStorage is Ownable,ITaskStore,ReentrancyGuard{
     
     uint8 internal constant DIR_WITHDRAW = 0;
     uint8 internal constant DIR_DEPOSIT = 1;
@@ -57,7 +58,7 @@ contract TaskStorage is Ownable,ITaskStore{
         voteCount = EnumerableSet.length(task.votes);
     }
  
-    function addTask(address _from,address _to,uint8 _direction,uint256 _amount,uint256 _fee,bytes32 _txid,uint8 _voteNum) public override returns (bytes32 taskHash,bool isNewTask){
+    function addTask(address _from,address _to,uint8 _direction,uint256 _amount,uint256 _fee,bytes32 _txid,uint8 _voteNum) public  override returns (bytes32 taskHash,bool isNewTask){
         
         taskHash = keccak256(abi.encodePacked(_from,_to,_direction,_amount,_txid));
         Task storage task = tasks[taskHash];
@@ -114,7 +115,8 @@ contract TaskStorage is Ownable,ITaskStore{
         status = task.status;
     }
 
-    function withdrawToken(bytes32 taskHash,address token) public override 
+
+    function withdrawToken(bytes32 taskHash,address token) nonReentrant public override 
     {
         Task storage task = tasks[taskHash];
         require(task.blocktime > 0 ," task not exist");
@@ -122,11 +124,12 @@ contract TaskStorage is Ownable,ITaskStore{
         require(task.direction == DIR_WITHDRAW," task direction error");
         uint256 amount = task.amount.sub(task.fee);
         require(ERC20(token).balanceOf(address(this))>=amount,"contract balance not enough");
-        TransferHelper.safeTransfer(token,task.to,amount);
         task.status = 3;
+        TransferHelper.safeTransfer(token,task.to,amount);
+       
     }
 
-    function withdrawNative(bytes32 taskHash,address token) public override 
+    function withdrawNative(bytes32 taskHash,address token) nonReentrant public override 
     {
         Task storage task = tasks[taskHash];
         require(task.blocktime > 0 ," task not exist");
@@ -136,10 +139,10 @@ contract TaskStorage is Ownable,ITaskStore{
         uint256 amount = task.amount.sub(task.fee);
 
         require(ERC20(token).balanceOf(address(this))>=amount,"contract balance not enough");
-        
+        task.status = 3;
         WCVN(token).withdraw(amount);
         TransferHelper.safeTransferCVN(task.to, amount);
-        task.status = 3;
+    
     }
     
 

@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 
-pragma solidity 0.6.12;
+pragma solidity ^0.6.12;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/Pausable.sol";
@@ -37,6 +37,15 @@ contract CVNBridge is  OperatorSet, Pausable {
     address public feeAddr;
     uint256 public feePerTx;
 
+    event StoreChanged(address indexed newAddr);
+
+    event VoteNumChanged(uint8 indexed newvalue);
+
+    event FeeAddrChanged(address indexed newAddr);
+
+    event FeeChanged(uint256 indexed newvalue);
+
+
 
     constructor(address _store,address _cvnt,address _feeAddr,uint256 _feePerTx)public{
         store=ITaskStore(_store);
@@ -49,10 +58,23 @@ contract CVNBridge is  OperatorSet, Pausable {
 
     function changeStore(address _store) public onlyOwner {
         store = ITaskStore(_store);
+        emit StoreChanged(_store);
     }
 
     function changeVoteNum(uint8 _vote) public onlyOperator{
         voteNum = _vote;
+        emit VoteNumChanged(voteNum);
+    }
+
+
+    function changeFeeAddr(address _feeAddr) public onlyOwner{
+        feeAddr = _feeAddr;
+        emit FeeAddrChanged(feeAddr);
+    }
+
+    function changeFeePerTx(uint256 _feePerTx) public onlyOwner{
+        feePerTx = _feePerTx;
+        emit FeeChanged(feePerTx);
     }
 
 
@@ -65,13 +87,14 @@ contract CVNBridge is  OperatorSet, Pausable {
             amount = amount.sub(feePerTx);
         }
 
+        // taskHash = keccak256(abi.encodePacked(msg.sender,_to,DIR_DEPOSIT,_amount,_txid));
+
         (taskHash,isNewTask) = store.addTask(msg.sender,_to,DIR_DEPOSIT,_amount,feePerTx,_txid,voteNum);
         if(isNewTask)
         {
             cvnt.deposit{value: _amount}();
             assert(cvnt.transfer(address(store), amount));
             if(needFee){
-                // TransferHelper.safeTransferFrom(cvnt,msg.sender,feeAddr,feePerTx);
                 assert(cvnt.transfer(feeAddr, feePerTx));
             }
             emit DepositRequest(msg.sender,_to,amount, _txid);
