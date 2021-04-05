@@ -22,7 +22,7 @@ contract CVNBridge is  OperatorSet, Pausable {
     
     ITaskStore store;
 
-    string public constant name = "HecoBridge";
+    string public constant name = "CVNBridge";
 
     event DepositRequest(address indexed from, address indexed to,uint256 value,  bytes32 txid);
     event DepositDone(address indexed from, address indexed to,uint256 value, bytes32 txid);

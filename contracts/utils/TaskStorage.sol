@@ -58,7 +58,7 @@ contract TaskStorage is Ownable,ITaskStore,ReentrancyGuard{
         voteCount = EnumerableSet.length(task.votes);
     }
  
-    function addTask(address _from,address _to,uint8 _direction,uint256 _amount,uint256 _fee,bytes32 _txid,uint8 _voteNum) public  override returns (bytes32 taskHash,bool isNewTask){
+    function addTask(address _from,address _to,uint8 _direction,uint256 _amount,uint256 _fee,bytes32 _txid,uint8 _voteNum) public onlyCaller override returns (bytes32 taskHash,bool isNewTask){
         
         taskHash = keccak256(abi.encodePacked(_from,_to,_direction,_amount,_txid));
         Task storage task = tasks[taskHash];
@@ -85,6 +85,7 @@ contract TaskStorage is Ownable,ITaskStore,ReentrancyGuard{
 
     function getTaskStatus(bytes32 taskHash) public view override returns (uint8){
         Task storage task = tasks[taskHash];
+        require(task.blocktime > 0 ,"task not exist");
         return task.status;
     }
 
@@ -129,6 +130,7 @@ contract TaskStorage is Ownable,ITaskStore,ReentrancyGuard{
        
     }
 
+    // TEST!event Withdraw(uint256 step,uint256 info,string message);
     function withdrawNative(bytes32 taskHash,address token) nonReentrant public override 
     {
         Task storage task = tasks[taskHash];
@@ -137,10 +139,14 @@ contract TaskStorage is Ownable,ITaskStore,ReentrancyGuard{
         require(task.direction == DIR_WITHDRAW," task direction error");
 
         uint256 amount = task.amount.sub(task.fee);
-
+        // TEST!emit Withdraw(1,amount,"sub ok");
         require(ERC20(token).balanceOf(address(this))>=amount,"contract balance not enough");
         task.status = 3;
+        // TEST!emit Withdraw(2,amount,"before withdraw");
         WCVN(token).withdraw(amount);
+        // TEST!emit Withdraw(3,amount,"after withdraw");
+
+
         TransferHelper.safeTransferCVN(task.to, amount);
     
     }

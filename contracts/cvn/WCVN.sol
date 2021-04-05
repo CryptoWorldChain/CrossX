@@ -25,11 +25,19 @@ contract WCVN {
     }
     
 
+    // TEST!event Withdraw(uint256 step,uint256 info,string message);
     function withdraw(uint wad) public {
+
         require(balanceOf[msg.sender] >= wad);
+        // TEST!emit Withdraw(0,wad,"WCVN check balance ok");
         balanceOf[msg.sender] -= wad;
+        // TEST!emit Withdraw(1,wad,"WCVN sub balance ok");
         msg.sender.transfer(wad);
+        // TEST!emit Withdraw(2,wad,"WCVN transfer ok");
         emit Withdrawal(msg.sender, wad);
+    }
+    function getBalanceOf(address addr) public view returns(uint256){
+        return balanceOf[addr];
     }
 
     function totalSupply() public view returns (uint) {

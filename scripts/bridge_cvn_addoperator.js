@@ -32,14 +32,17 @@ async function main() {
 
   console.log(" CVNBridge operator count:",(await bridge.operatorCount()).toString(10));
 
-  console.log(" CVNBridge is operator:",(await bridge.isOperator(accounts[0].address)));
+for(var i=0;i<10;i++)
+  {
+    // await bridge.addOperator(accounts[i].address);
+      console.log(" CVNBridge is operator["+accounts[i].address+"]:",(await bridge.isOperator(accounts[i].address)));
+  }
 
-  console.log(" CVNBridge is operator:",(await bridge.isOperator(accounts[9].address)));
+
+
+  // console.log(" CVNBridge is operator:",(await bridge.isOperator(accounts[9].address)));
   
 
-
-    
-  
 }
 
 // We recommend this pattern to be able to use async/await everywhere

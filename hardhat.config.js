@@ -96,7 +96,12 @@ module.exports = {
       loggingEnabled: true,
       blockGasLimit:0x280de80,
       attachs:{
+        fee: "0xD42771F388eCe9Ce62aEB3fBD64221EF1132B19E",
         cvnt: "0x3C15538ED063e688c8DF3d571Cb7a0062d2fB18D",
+        wcvn: "0x9da9e7fc80CFe055553F9AA4B5f38972CaEda196",
+        cvn_storage:"0x139C00724823708b974Ef61DfdF3999B85585B49",
+        cvn_bridge: "0x8162A8EA7236a90c0E5D6Ec8f8Ad3bb3394fda30",
+
       },
     },
     hecolocal:{

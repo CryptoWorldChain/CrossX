@@ -2,18 +2,15 @@
 
 const hre = require("hardhat");
 require("@nomiclabs/hardhat-waffle");
-var Assert = require('assert');
-
-const web3 = require('web3');
-
 
 
 
 async function main() {
 
 
-  const attachs =  hre.network.config.attachs;
 
+
+  const attachs =  hre.network.config.attachs;
   const accounts = await ethers.getSigners();
   const CVNBridge = await hre.ethers.getContractFactory("CVNBridge");
 
@@ -21,25 +18,16 @@ async function main() {
 
   console.log("CVNBridge attached to:", bridge.address);
 
-  for(var i=0;i<5;i++)
-  {
-    await bridge.addOperator(accounts[i].address);
-  }
+  const TaskStorage = await hre.ethers.getContractFactory("TaskStorage");
+  const store = await TaskStorage.attach(attachs.cvn_storage);
+  console.log("TaskStorage attach to:", store.address);
 
-  await bridge.changeVoteNum(3);
+  console.log("TaskStorage caller is:", await store.caller());
+  await store.changeCaller(bridge.address);
 
-  console.log("change CVNBridge voteNum:",await bridge.voteNum());
+  console.log("TaskStorage caller to:", await  store.caller());
+  // await bridge.change
 
-  console.log(" CVNBridge operator count:",(await bridge.operatorCount()).toString(10));
-
-  console.log(" CVNBridge is operator:",(await bridge.isOperator(accounts[0].address)));
-
-  console.log(" CVNBridge is operator:",(await bridge.isOperator(accounts[9].address)));
-  
-
-
-    
-  
 }
 
 // We recommend this pattern to be able to use async/await everywhere
