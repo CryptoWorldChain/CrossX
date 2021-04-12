@@ -1,4 +1,4 @@
 # CrossHeco
 
-Cross Chain between CVN and Heco chain.
+Cross Chain between CVN and EVM based chain.
 
